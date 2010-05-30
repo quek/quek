@@ -42,8 +42,8 @@
                              (push (read-preserving-whitespace in) args)
                              (when (peek-equal #\,)
                                #1#))
-                      else if (char= #\~ c)
-                             do (write-string "~~" out)
+                      ;;else if (char= #\~ c)
+                      ;;       do (write-string "~~" out)
                       else
                         do (write-char c out))))))
       `(format nil ,format ,@(reverse args)))))
