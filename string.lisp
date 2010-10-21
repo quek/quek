@@ -48,8 +48,13 @@
                         do (write-char c out))))))
       `(format nil ,format ,@(reverse args)))))
 
-(set-dispatch-macro-character
- #\# #\" '|#"-reader|)
+;;(set-dispatch-macro-character
+;; #\# #\" '|#"-reader|)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'syntax))
+(named-readtables:defreadtable quek:syntax
+  (:merge :common-lisp)
+  (:dispatch-macro-char #\# #\" '|#"-reader|))
 
 (defun string-start-p (string start &key (test #'char=))
   (let ((p (mismatch string start :test test)))

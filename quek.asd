@@ -15,4 +15,5 @@
                anaphora
                cl-ppcre
                bordeaux-threads
-               trivial-garbage))
+               trivial-garbage
+               named-readtables))

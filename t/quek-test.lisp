@@ -84,6 +84,7 @@
                (funcall (lambda (x y z)
                           (princ z) (princ y) (princ x)) #\a #\b #\c)))))
 
+(named-readtables:in-readtable quek:syntax)
 
 (deftest |test-#"-reader| ()
   (is (string= "" #""))

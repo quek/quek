@@ -72,7 +72,7 @@
     `(lambda ,args
        ,form)))
 
-(set-dispatch-macro-character #\# #\` #'|#`-reader|)
+;;(set-dispatch-macro-character #\# #\` #'|#`-reader|)
 
 (defun x!-symbol-p (c s)
   (symbol-head-p s (format nil "~c!" c)))
