@@ -19,15 +19,6 @@
   (is (symbol-head-p 'abc "")))
 
 
-(defmacro! x*x (o!x)
-  `(* ,g!x ,g!x))
-
-(deftest test-demcaro! ()
-  (is (= 4
-         (let ((x 1))
-           (x*x (incf x))))))
-
-
 (deftest test-^ ()
   (is (equal '((2) (3) (4)) (mapcar (^ list (1+ _)) '(1 2 3))))
   (is (equal '(1 4 9) (mapcar (^ * _ _) '(1 2 3))))
@@ -43,27 +34,6 @@
   (is (equal "cba"
              (with-output-to-string (*standard-output*)
                (funcall (^ (princ _z) (princ _y) (princ _x)) #\a #\b #\c)))))
-
-
-(eval-always (quek::enable-lambda-reader))
-
-(deftest |test-{}| ()
-  (is (equal '((2) (3) (4)) (mapcar {list (1+ _)} '(1 2 3))))
-  (is (equal '(1 4 9) (mapcar {* _ _} '(1 2 3))))
-  (is (equal '((1 a "A") (2 b "B"))
-             (mapcar {list _z _y _x} '("A" "B") '(a b) '(1 2))))
-  (is (equal '(1 2 3)
-             (funcall {identity _rest} 1 2 3)))
-  (is (equal '(2 1 3 4)
-             (funcall {apply #'list _b _a _rest} 1 2 3 4)))
-  (is (equal "a"
-             (with-output-to-string (*standard-output*)
-               (funcall {princ _} #\a))))
-  (is (equal "abc"
-             (with-output-to-string (*standard-output*)
-               (funcall {(princ _x) (princ _y) (princ _z)} #\a #\b #\c)))))
-
-(eval-always (quek::disable-lambda-reader))
 
 
 (deftest test-lambda ()

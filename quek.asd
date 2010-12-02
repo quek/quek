@@ -4,14 +4,13 @@
   :serial t
   :components ((:file "package")
                (:file "prelude")
-               (:file "base")
                (:file "util")
                (:file "match")
                (:file "process")
                (:file "string")
-               (:file "range")
-               (:file "text"))
-  :depends-on (series
+               (:file "range"))
+  :depends-on (alexandria
+               series
                anaphora
                cl-ppcre
                bordeaux-threads

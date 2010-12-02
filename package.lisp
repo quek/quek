@@ -1,3 +1,5 @@
 (defpackage :quek
-  (:use :cl :series :anaphora)
+  (:use :cl :anaphora)
   (:nicknames #:q))
+
+(series::install :pkg :quek :implicit-map t)

@@ -108,32 +108,33 @@
 ;;(collect-pattern-symbol (pattern-convert '''a))
 
 
-(defmacro! mif (pattern value then &optional else)
-  (let* ((converted-pattern (pattern-convert pattern))
-         (pattern-symbols
-          (delete-if (lambda (x)
-                       (string= "_" (symbol-name x)))
-                     (delete-duplicates
-                      (collect-pattern-symbol converted-pattern)))))
-    `(multiple-value-bind (,g!match-p ,g!env)
-         (match-p ,(cond ((atom converted-pattern)
-                          converted-pattern)
-                         ((eq 'quote (car converted-pattern))
-                          `(,@converted-pattern))
-                         ((eq 'quote (car (last (butlast converted-pattern))))
-                          `(rplacd (list ,@(butlast converted-pattern 2))
-                                   ',(car (last converted-pattern))))
-                         (t
-                          `(list ,@converted-pattern)))
-                  ,value)
-       (declare (ignorable ,g!env))
-       (if ,g!match-p
-           (let ,(mapcar (lambda (x)
-                           `(,x (cdr (assoc ',x ,g!env))))
-                  pattern-symbols)
-             (declare (ignorable ,@pattern-symbols))
-             ,then)
-           ,else))))
+(defmacro mif (pattern value then &optional else)
+  (alexandria:with-gensyms (match-p env)
+    (let* ((converted-pattern (pattern-convert pattern))
+           (pattern-symbols
+            (delete-if (lambda (x)
+                         (string= "_" (symbol-name x)))
+                       (delete-duplicates
+                        (collect-pattern-symbol converted-pattern)))))
+      `(multiple-value-bind (,match-p ,env)
+           (match-p ,(cond ((atom converted-pattern)
+                            converted-pattern)
+                           ((eq 'quote (car converted-pattern))
+                            `(,@converted-pattern))
+                           ((eq 'quote (car (last (butlast converted-pattern))))
+                            `(rplacd (list ,@(butlast converted-pattern 2))
+                                     ',(car (last converted-pattern))))
+                           (t
+                            `(list ,@converted-pattern)))
+                    ,value)
+         (declare (ignorable ,env))
+         (if ,match-p
+             (let ,(mapcar (lambda (x)
+                             `(,x (cdr (assoc ',x ,env))))
+                    pattern-symbols)
+               (declare (ignorable ,@pattern-symbols))
+               ,then)
+             ,else)))))
 
 ;;(mif (a) '(1) a)
 ;;(mif (a b) '(1 2) (+ a b))
@@ -146,14 +147,15 @@
 ;;(mif 'x 'x t)
 ;;(mif 'x 'y t)
 
-(defmacro! mcond (o!value &body body)
-  (reduce (lambda (x acc)
-            `(mif ,(car x) ,g!value
-                  (progn ,@(cdr x))
-                  ,acc))
-          body
-          :initial-value nil ;;`(error "~s" ,g!value)
-          :from-end t))
+(defmacro mcond (value &body body)
+  (alexandria:once-only (value)
+    (reduce (lambda (x acc)
+              `(mif ,(car x) ,value
+                    (progn ,@(cdr x))
+                    ,acc))
+            body
+            :initial-value nil ;;`(error "~s" ,g!value)
+            :from-end t)))
 
 
 #|

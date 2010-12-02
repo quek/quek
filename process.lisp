@@ -86,47 +86,47 @@
                :test #'string=)
     (send it message)))
 
-(defmacro! receive ((&optional timeout timeout-value) &body body)
-  `(let ((,g!timeout ,timeout)
-         (,g!timeout-value ,timeout-value)
-         (,g!process (get-process)))
-     (with-accessors ((,g!waitqueue waitqueue-of)
-                      (,g!mutex mutex-of)
-                      (,g!mbox-head mbox-head-of)
-                      (,g!mbox-tail mbox-tail-of)) ,g!process
-       (let (,g!timeout-p)
-         (when (and (not (message-exist-p ,g!process)) ,g!timeout)
-           (spawn (sleep ,g!timeout)
-                  (bt:with-lock-held (,g!mutex)
-                    (setf ,g!timeout-p t)
-                    (bt:condition-notify ,g!waitqueue))))
-         (labels ((,g!rev (,g!messages ,g!prev)
-                    (if (eq ,g!messages ,g!mbox-tail) ; no more message
-                        (if (,g!wait)
-                            (,g!rev ,g!mbox-head nil)
-                            ,g!timeout-value)
-                        (mcond (car ,g!messages)
-                          ,@(append
-                             (mapcar
-                              (lambda (x)
-                                `(,(car x)
-                                   (bt:with-recursive-lock-held (,g!mutex)
-                                     (if ,g!prev
-                                         (setf (cdr ,g!prev)
-                                               (cdr ,g!messages))
-                                         (setf ,g!mbox-head
-                                               (cdr ,g!messages))))
-                                   ,@(cdr x)))
-                              body)
-                             `((_ (,g!rev (cdr ,g!messages) ,g!messages)))))))
-                  (,g!wait ()
-                    (if (message-exist-p ,g!process)
-                        t
-                        (bt:with-recursive-lock-held (,g!mutex)
-                          (unless ,g!timeout-p
-                            (bt:condition-wait ,g!waitqueue ,g!mutex))
-                          (message-exist-p ,g!process)))))
-           (,g!rev ,g!mbox-head nil))))))
+(defmacro receive ((&optional timeout timeout-value) &body body)
+  (alexandria:once-only (timeout timeout-value)
+    (alexandria:with-gensyms (timeout-p process waitqueue mbox-head mbox-tail wait rev messages prev mutex)
+      `(let ((,process (get-process)))
+         (with-accessors ((,waitqueue waitqueue-of)
+                          (,mutex mutex-of)
+                          (,mbox-head mbox-head-of)
+                          (,mbox-tail mbox-tail-of)) ,process
+           (let (,timeout-p)
+             (when (and (not (message-exist-p ,process)) ,timeout)
+               (spawn (sleep ,timeout)
+                      (bt:with-lock-held (,mutex)
+                        (setf ,timeout-p t)
+                        (bt:condition-notify ,waitqueue))))
+             (labels ((,rev (,messages ,prev)
+                        (if (eq ,messages ,mbox-tail) ; no more message
+                            (if (,wait)
+                                (,rev ,mbox-head nil)
+                                ,timeout-value)
+                            (mcond (car ,messages)
+                              ,@(append
+                                 (mapcar
+                                  (lambda (x)
+                                    `(,(car x)
+                                       (bt:with-recursive-lock-held (,mutex)
+                                         (if ,prev
+                                             (setf (cdr ,prev)
+                                                   (cdr ,messages))
+                                             (setf ,mbox-head
+                                                   (cdr ,messages))))
+                                       ,@(cdr x)))
+                                  body)
+                                 `((_ (,rev (cdr ,messages) ,messages)))))))
+                      (,wait ()
+                        (if (message-exist-p ,process)
+                            t
+                            (bt:with-recursive-lock-held (,mutex)
+                              (unless ,timeout-p
+                                (bt:condition-wait ,waitqueue ,mutex))
+                              (message-exist-p ,process)))))
+               (,rev ,mbox-head nil))))))))
 #|
 (let ((p (spawn (labels ((f ()
                            (receive ()
