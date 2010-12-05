@@ -1,6 +1,6 @@
 (in-package :quek)
 
-(export '(spawn send receive *exit* *current-thread*))
+(export '(spawn send receive +exit+ *current-thread*))
 
 (define-symbol-macro *current-thread* (bt:current-thread))
 
@@ -9,7 +9,7 @@
 
 (defvar *processes-mutex* (bt:make-lock))
 
-(defvar *exit* (gensym "*exit*"))
+(defvar +exit+ (gensym "+exit+"))
 
 (defclass process ()
   ((name :initarg :name :accessor name-of)
@@ -35,7 +35,7 @@
 (defgeneric kill-children (process)
   (:method ((process process))
     (loop for i in (children-of process)
-          do (send i *exit*))))
+          do (send i +exit+))))
 
 (defgeneric kill-process (process)
   (:method ((process process))
@@ -70,7 +70,7 @@
   (send (get-process thread) message))
 
 (defmethod send ((process process) message)
-  (if (eq message *exit*)
+  (if (eq message +exit+)
       (kill-process process)
       (bt:with-lock-held ((mutex-of process))
         (let ((cons (cons nil nil)))
@@ -164,7 +164,7 @@
   (send thread 'hello)
   (send thread 'world)
   (sleep 0.1)
-  (send thread *exit*))
+  (send thread +exit+))
 
 (let ((th (spawn
             (print "start...")
@@ -189,6 +189,6 @@
   (loop repeat max
         do (receive ()
              (x (print x))))
-  (send a *exit*)
-  (send b *exit*))
+  (send a +exit+)
+  (send b +exit+))
 |#
