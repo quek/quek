@@ -5,10 +5,12 @@
   :components ((:file "package")
                (:file "prelude")
                (:file "util")
+               (:file "series")
                (:file "match")
                (:file "process")
                (:file "string")
-               (:file "range"))
+               (:file "range")
+               (:file "dev"))
   :depends-on (alexandria
                series
                anaphora

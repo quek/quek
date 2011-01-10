@@ -9,7 +9,7 @@
 
 (defvar *processes-mutex* (bt:make-lock))
 
-(defvar +exit+ (gensym "+exit+"))
+(defvar +exit+ '+exit+)
 
 (defclass process ()
   ((name :initarg :name :accessor name-of)
