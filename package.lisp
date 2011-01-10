@@ -16,7 +16,9 @@
                   (:export ,@cl-symbols
                            ,@anaphora-symbols
                            ,@series::/series-forms/
-                           ,@series-symbols)
+                           ,@series-symbols
+                           ;; dev.lisp
+                           :set-package-nicknames)
                   (:nicknames #:q)))))
   (m))
 

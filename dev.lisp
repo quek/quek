@@ -1,5 +1,8 @@
 (in-package :quek)
 
+(defun set-package-nicknames (package &rest nicknames)
+  (rename-package package (package-name package) nicknames))
+
 (defun collect-untinterned-symbol (tree)
   (remove-duplicates
    (collect
