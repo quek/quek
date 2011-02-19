@@ -1,7 +1,5 @@
 (in-package :quek)
 
-(export '(emptyp))
-
 (defgeneric emptyp (x)
   (:method ((x null))
     t)

@@ -12,14 +12,14 @@
 
 
 (deftest test-timeout ()
-  (is (eq 'hello (@ :timeout 0 :timeout-value 'hello)))
-  (is (eq 'hello (@ :timeout 0.01 :timeout-value 'hello)))
+  (is (eq 'hello (receive (0 'hello))))
+  (is (eq 'hello (receive (0.01 'hello))))
   (let ((thread *current-thread*))
-    (! thread 'world)
-    (is (eq 'world (@ :timeout 0.01 :timeout-value 'hello))))
+    (send thread 'world)
+    (is (eq 'world (receive (0.01 'hello)))))
   (let ((thread *current-thread*))
-    (spawn (sleep 0.1) (! thread 'world))
-    (is (eq 'hello (@ :timeout 0.01 :timeout-value 'hello))))
+    (spawn (sleep 0.1) (send thread 'world))
+    (is (eq 'hello (receive (0.01 'hello)))))
 )
 
 (quek-process-test)

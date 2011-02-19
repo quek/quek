@@ -70,3 +70,11 @@
 |#
 
 
+#+sbcl
+(defun thread-backtrace (thread)
+  "Interrupt THREAD and print a backtrace. This should not affect the thread."
+  (sb-thread:interrupt-thread
+   thread
+   (let ((debug-io *debug-io*))
+     (lambda () (let ((*debug-io* debug-io))
+                  (sb-debug:backtrace 128))))))

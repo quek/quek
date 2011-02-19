@@ -1,9 +1,5 @@
 (in-package :quek)
 
-(export '(scan-regex-split
-          scan-line
-          scan-directory))
-
 (defun scan-regex-split (regex string)
   (declare (optimizable-series-function))
   (producing (z) ((r regex) (s string) (scan-start 0) subseq-start subseq-end)
@@ -109,3 +105,48 @@ d"))))
          (setq x (car d))
          (setq d (cdr d))
          (next-out z x)))))
+
+
+(defun progs-body (var body)
+  (let ((form (cond ((atom (car body))
+                     (list (car body) var))
+                    ((collect (choose-if (lambda (x) (eq var x))
+                                         (scan-lists-of-lists-fringe (cdar body))))
+                     (car body))
+                    (t
+                     (append (car body) (list var))))))
+    (if (endp (cdr body))
+        form
+        `(let ((,var ,form))
+           ,(progs-body var (cdr body))))))
+
+(defmacro progs ((&optional (var (gensym))) &body body)
+  `(let ((,var ,(car body)))
+     ,(progs-body var (cdr body))))
+
+#+baha
+(progs ()
+  (scan-range :upto 5)
+  (choose-if #'oddp)
+  (+ 10)
+  (collect))
+;;=> (11 13 15)
+#+baha
+(progs (x)
+  (scan-range :upto 5)
+  (choose-if #'oddp)
+  (* x x)
+  (collect))
+;;=> (1 9 25)
+#+baha
+(progs (choose-if)
+  (scan-range :upto 5)
+  (choose-if #'oddp)
+  (- choose-if 10)
+  (collect))
+;;=> (-9 -7 -5)
+#+baha
+(progs (x)
+  (scan-symbols :cl)
+  (collect-max (length (symbol-name x)) x))
+;;=> LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT

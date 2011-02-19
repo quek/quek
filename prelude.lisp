@@ -1,11 +1,5 @@
 (in-package :quek)
 
-(export '(eval-always
-          str
-          sym
-          symbol-head-p
-          ^))
-
 (defmacro eval-always (&body body)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      ,@body))
@@ -49,9 +43,6 @@
 
 (defun x!-symbol-p (c s)
   (symbol-head-p s (format nil "~c!" c)))
-
-(export '(p
-          with-ca/dr))
 
 (defmacro p (&body body)
   `(prog1

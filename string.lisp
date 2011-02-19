@@ -1,7 +1,5 @@
 (in-package :quek)
 
-(export '(string-start-p))
-
 (defun |#"-reader"| (stream)
   (funcall (get-macro-character #\") stream #\"))
 
@@ -48,10 +46,8 @@
          ""))
      (|#"-reader"| stream))))
 
-(set-dispatch-macro-character #\# #\" '|#"-reader|)
+;; (set-dispatch-macro-character #\# #\" '|#"-reader|)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'syntax))
 (named-readtables:defreadtable quek:syntax
   (:merge :common-lisp)
   (:dispatch-macro-char #\# #\" '|#"-reader|))

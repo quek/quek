@@ -1,7 +1,5 @@
 (in-package :quek)
 
-(export '(spawn send receive +exit+ *current-thread*))
-
 (define-symbol-macro *current-thread* (bt:current-thread))
 
 (defvar *thread-process-map* (tg:make-weak-hash-table

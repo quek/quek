@@ -1,8 +1,5 @@
 (in-package :quek)
 
-(export '(mif
-          mcond))
-
 (defun s!-symbol-p (s)
   "slot symbol p"
   (x!-symbol-p #\S s))
@@ -38,7 +35,7 @@
 ;;(eval (pattern-convert 'char-code-limit))
 ;;(pattern-convert '(a b))
 ;;(pattern-convert '(a b!b))
-;;(pattern-convert '(a . b))     => ('a quete b)
+;;(pattern-convert '(a . b))     => ('a quote b)
 ;;(pattern-convert '(a . b!b))   => ('a . b)
 ;;(pattern-convert '(b!a . b))   => (a quete b)
 ;;(pattern-convert '(b!a . b!b)) => (a . b)
@@ -180,4 +177,4 @@ v!hello
 
         (let ((key "you-name"))
           (ifmatch ((slot name v!key)
-                    |#
+|#

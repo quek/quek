@@ -1,12 +1,5 @@
 (in-package :quek)
 
-(export '(n..
-          0..
-          1..
-          n...
-          0...
-          1...))
-
 (defun n.. (from to)
   (loop for i from from to to collect i))
 
