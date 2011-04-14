@@ -32,6 +32,10 @@
   (with-slots (items) self
     (collect (car (scan items)))))
 
+(defmethod vals ((self freq-dist))
+  (with-slots (items) self
+    (collect (cdr (scan items)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defparameter *data*
   (collect (#M(lambda (x)
@@ -53,3 +57,6 @@
 
 (keys *freq-dist*)
 ;;=> (8 5 4 6 0 2 9 7 3 1)
+
+(vals *freq-dist*)
+;;=> (124 110 104 103 103 102 100 86 86 83)
