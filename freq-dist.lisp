@@ -8,9 +8,10 @@
   (slot-value self 'items))
 
 (defmethod freq ((self freq-dist) key)
-  (let ((total (collect-sum (cdr (scan (slot-value self 'items))))))
-    (/ (gethash key (slot-value self 'hash))
-       total)))
+  (with-slots (hash items) self
+    (let ((total (collect-sum (cdr (scan items)))))
+      (/ (gethash key hash)
+         total))))
 
 (defun freq-dist (data)
   (let ((hash (make-hash-table :test #'equal)))
@@ -23,6 +24,14 @@
                                            (cons k v)))
                                 #'>= :key #'cdr))))
 
+(defmethod max-key ((self freq-dist))
+  (with-slots (items) self
+    (caar items)))
+
+(defmethod keys ((self freq-dist))
+  (with-slots (items) self
+    (collect (car (scan items)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defparameter *data*
   (collect (#M(lambda (x)
@@ -33,9 +42,14 @@
 (defparameter *freq-dist* (freq-dist *data*))
 
 (items *freq-dist*)
-;;=> ((1 . 127) (6 . 116) (4 . 107) (7 . 105) (5 . 97) (2 . 96) (0 . 94) (9 . 89)
-;;    (3 . 88) (8 . 82))
+;;=> ((8 . 124) (5 . 110) (4 . 104) (6 . 103) (0 . 103) (2 . 102) (9 . 100) (7 . 86)
+;;    (3 . 86) (1 . 83))
 
 (freq *freq-dist* 3)
-;;=> 8/91
+;;=> 86/1001
 
+(max-key *freq-dist*)
+;;=> 8
+
+(keys *freq-dist*)
+;;=> (8 5 4 6 0 2 9 7 3 1)
