@@ -13,7 +13,7 @@
       (/ (gethash key hash)
          total))))
 
-(defun freq-dist (data)
+(defun freq-dist (&optional data)
   (let ((hash (make-hash-table :test #'equal)))
     (iterate ((i (scan data)))
       (incf (gethash i hash 0)))
@@ -60,3 +60,4 @@
 
 (vals *freq-dist*)
 ;;=> (124 110 104 103 103 102 100 86 86 83)
+
