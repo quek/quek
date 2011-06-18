@@ -1,9 +1,9 @@
 (in-package :quek)
 
-(defmacro use-symbol (package &rest symbols)
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (let ((package (or (find-package ,package)
-                        (make-package ,package :use nil))))
+(defmacro import-with-prefix (prefix &rest symbols)
+  `(eval-always
+     (let ((package (or (find-package ,prefix)
+                        (make-package ,prefix :use nil))))
        (import ',symbols package)
        (export ',symbols package))))
 

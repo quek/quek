@@ -45,9 +45,8 @@
                            #:n...
                            ;; dev.lisp
                            #:set-package-nicknames
-                           #:use-symbol
-                           #:sdefpackage)
-                  (:nicknames #:q)))))
+                           #:import-with-prefix
+                           #:sdefpackage)))))
   (m))
 
 (series::install :pkg :quek :implicit-map t)
