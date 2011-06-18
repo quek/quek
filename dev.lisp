@@ -1,5 +1,12 @@
 (in-package :quek)
 
+(defmacro use-symbol (package &rest symbols)
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (let ((package (or (find-package ,package)
+                        (make-package ,package :use nil))))
+       (import ',symbols package)
+       (export ',symbols package))))
+
 (defun set-package-nicknames (package &rest nicknames)
   (rename-package package (package-name package) nicknames))
 

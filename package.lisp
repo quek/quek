@@ -44,7 +44,8 @@
                            #:n..
                            #:n...
                            ;; dev.lisp
-                           :set-package-nicknames)
+                           #:set-package-nicknames
+                           #:use-symbol)
                   (:nicknames #:q)))))
   (m))
 
