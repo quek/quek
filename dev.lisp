@@ -85,3 +85,11 @@
    (let ((debug-io *debug-io*))
      (lambda () (let ((*debug-io* debug-io))
                   (sb-debug:backtrace 128))))))
+
+(defmacro sdefpackage (package &rest options)
+  `(progn
+     (defpackage ,package
+       ,@options
+       (:use :series)
+       (:shadowing-import-from :series ,@series::/series-forms/))
+     (series::install :pkg ,package :implicit-map t)))
