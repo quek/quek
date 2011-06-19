@@ -150,3 +150,20 @@ d"))))
   (scan-symbols :cl)
   (collect-max (length (symbol-name x)) x))
 ;;=> LEAST-POSITIVE-NORMALIZED-DOUBLE-FLOAT
+
+
+(defun scan-char-range (from to)
+  (declare (optimizable-series-function))
+  (producing (z) ((c from) (to to) end (next from))
+             (declare (type character c to next)
+                      (type boolean end))
+             (loop
+               (tagbody
+                  (if end
+                      (terminate-producing))
+                  (setq c next)
+                  (if (char= c to)
+                      (setq end t))
+                  (setq next (code-char (1+ (char-code c))))
+                  (next-out z c)))))
+
