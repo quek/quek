@@ -48,7 +48,7 @@
 
 ;; (set-dispatch-macro-character #\# #\" '|#"-reader|)
 
-(named-readtables:defreadtable quek:syntax
+(named-readtables:defreadtable |#"|
   (:merge :common-lisp)
   (:dispatch-macro-char #\# #\" '|#"-reader|))
 

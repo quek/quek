@@ -17,7 +17,7 @@
                            #:sym
                            #:eval-always
                            #:scan-line
-                           #:syntax
+                           #:|#"|
                            #:string-start-p
                            #:symbol-head-p
                            #:with-ca/dr
