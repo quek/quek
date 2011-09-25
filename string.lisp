@@ -18,22 +18,24 @@
                `(equal ,c (peek-char nil in nil nil))))
     (let* ((args nil)
            (format
-            (with-output-to-string (out)
-              (with-input-from-string (in s)
-                (loop for c = #1=(read-char in nil nil)
-                      while c
-                      if (and (equal #\# c) (peek-equal #\,))
-                        do (progn
-                             #1#
-                             (write-string "~a" out)
-                             (push (read-preserving-whitespace in) args)
-                             (when (peek-equal #\,)
-                               #1#))
-                      ;;else if (char= #\~ c)
-                      ;;       do (write-string "~~" out)
-                      else
-                        do (write-char c out))))))
-      `(format nil ,format ,@(reverse args)))))
+             (with-output-to-string (out)
+               (with-input-from-string (in s)
+                 (loop for c = #1=(read-char in nil nil)
+                       while c
+                       if (and (equal #\# c) (peek-equal #\,))
+                         do (progn
+                              #1#
+                              (write-string "~a" out)
+                              (push (read-preserving-whitespace in) args)
+                              (when (peek-equal #\,)
+                                #1#))
+                            ;;else if (char= #\~ c)
+                            ;;       do (write-string "~~" out)
+                       else
+                         do (write-char c out))))))
+      (if (every #'constantp args)
+          (apply #'format nil format (mapcar #'eval (reverse args)))
+          `(format nil ,format ,@(reverse args))))))
 
 (defun |#"-reader| (stream sub-char numarg)
   (declare (ignore sub-char numarg))
@@ -50,7 +52,9 @@
 
 (named-readtables:defreadtable |#"|
   (:merge :common-lisp)
-  (:dispatch-macro-char #\# #\" '|#"-reader|))
+  (:dispatch-macro-char #\# #\" '|#"-reader|)
+  (:dispatch-macro-char #\# #\Z #'series::series-reader)
+  (:dispatch-macro-char #\# #\M #'series::abbreviated-map-fn-reader))
 
 (defun string-start-p (string start &key (test #'char=))
   (let ((p (mismatch string start :test test)))
