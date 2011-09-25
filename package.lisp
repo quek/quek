@@ -37,6 +37,7 @@
                            #:scan-regex-split
                            #:progs
                            #:scan-char-range
+                           #:scan-file*
                            ;; ragne
                            #:0..
                            #:0...
