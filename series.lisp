@@ -193,12 +193,13 @@ Evaluation took:
 
 (series::defS scan-file* (name &rest args-for-open &key (reader #'read-line) &allow-other-keys)
   "like scan-file. accept options for open."
-  (series::fragl ((name) (reader) (args-for-open)) ((items t))
-                 ((items t)
+  (series::fragl ((name) (reader) (args-for-open)) ; args
+                 ((items t))            ; rets
+                 ((items t)             ; aux
                   (lastcons cons (list nil))
                   (lst list))
-                 ()
-                 ((setq lst lastcons)
+                 ()                     ; alt
+                 ((setq lst lastcons)   ; prolog
                   (with-open-stream (f (apply #'open name :direction
                                               :input (remove-from-keyword-args args-for-open :reader)))
                     (cl:let ((done (list nil)))
@@ -208,29 +209,29 @@ Evaluation took:
                             (return nil))
                           (setq lastcons (setf (cdr lastcons) (cons item nil)))))))
                   (setq lst (cdr lst)))
-                 ((if (null lst) (go series::end))
+                 ((if (null lst) (go series::end)) ; body
                   (setq items (car lst))
                   (setq lst (cdr lst)))
-                 ()
-                 ()
-                 :context)
+                 ()                     ; epilog
+                 ()                     ; wraprs
+                 :context)              ; impure
   :optimizer
   (series::apply-literal-frag
    (cl:let ((file (series::new-var 'file)))
-     `((((reader))
-        ((items t))
-        ((items t) (done t (list nil)))
-        ()
-        ()
-        ((if (eq (setq items (cl:funcall reader ,file nil done)) done)
+     `((((reader))                      ; args
+        ((items t))                     ; rets
+        ((items t) (done t (list nil))) ; aux
+        ()                              ; alt
+        ()                              ; prolog
+        ((if (eq (setq items (cl:funcall reader ,file nil done)) done) ; body
              (go series::end)))
-        ()
-        ((#'(lambda (code)
+        ()                              ; epilog
+        ((#'(lambda (code)              ; wraprs
               (list 'with-open-file
                     '(,file ,name :direction :input ,@(remove-from-keyword-args args-for-open :reader))
                     code)) :loop))
-        :context)
-       ,reader))))
+        :context)                       ; impure
+       ,reader))))                      ; これは何?
 
 #|
 (cl:progn
