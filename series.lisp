@@ -46,7 +46,16 @@ d"))))
 ;;(scan-line2 "~/.sbclrc" :utf-8)
 ;;(collect (scan-line2 "~/.sbclrc"))
 ;;(collect (scan-line2 "~/.sbclrc" :utf-8))
-
+#|
+(time (dotimes (i 10 nil) (scan-line2 "/usr/share/dict/words")))
+Evaluation took:
+  1.378 seconds of real time
+  1.380086 seconds of total run time (1.216076 user, 0.164010 system)
+  [ Run times consist of 0.768 seconds GC time, and 0.613 seconds non-GC time. ]
+  100.15% CPU
+  2,474,309,529 processor cycles
+  170,590,784 bytes consed
+|#
 
 (series::defS scan-line (name &optional (external-format :default))
   "(scan-line file-name &key (external-format :default))"
@@ -92,6 +101,16 @@ d"))))
 ;;(scan-line "~/.sbclrc" :utf-8)
 ;;(collect (scan-line "~/.sbclrc"))
 ;;(collect (scan-line "~/.sbclrc" :utf-8))
+#|
+(time (dotimes (i 10 nil) (scan-line "/usr/share/dict/words")))
+Evaluation took:
+  0.569 seconds of real time
+  0.560035 seconds of total run time (0.492031 user, 0.068004 system)
+  [ Run times consist of 0.256 seconds GC time, and 0.305 seconds non-GC time. ]
+  98.42% CPU
+  1,021,365,135 processor cycles
+75,932,032 bytes consed
+|#
 
 
 
@@ -167,3 +186,63 @@ d"))))
          (setq next (code-char (1+ (char-code c))))
          (next-out z c)))))
 
+(defun remove-from-keyword-args (args &rest keywords)
+  (loop for (a b) on args by #'cddr
+        unless (member a keywords :test #'eq)
+          append (list a b)))
+
+(series::defS scan-file* (name &rest args-for-open &key (reader #'read-line) &allow-other-keys)
+  "like scan-file. accept options for open."
+  (series::fragl ((name) (reader) (args-for-open)) ((items t))
+                 ((items t)
+                  (lastcons cons (list nil))
+                  (lst list))
+                 ()
+                 ((setq lst lastcons)
+                  (with-open-stream (f (apply #'open name :direction
+                                              :input (remove-from-keyword-args args-for-open :reader)))
+                    (cl:let ((done (list nil)))
+                      (loop
+                        (cl:let ((item (cl:funcall reader f nil done)))
+                          (when (eq item done)
+                            (return nil))
+                          (setq lastcons (setf (cdr lastcons) (cons item nil)))))))
+                  (setq lst (cdr lst)))
+                 ((if (null lst) (go series::end))
+                  (setq items (car lst))
+                  (setq lst (cdr lst)))
+                 ()
+                 ()
+                 :context)
+  :optimizer
+  (series::apply-literal-frag
+   (cl:let ((file (series::new-var 'file)))
+     `((((reader))
+        ((items t))
+        ((items t) (done t (list nil)))
+        ()
+        ()
+        ((if (eq (setq items (cl:funcall reader ,file nil done)) done)
+             (go series::end)))
+        ()
+        ((#'(lambda (code)
+              (list 'with-open-file
+                    '(,file ,name :direction :input ,@(remove-from-keyword-args args-for-open :reader))
+                    code)) :loop))
+        :context)
+       ,reader))))
+
+#|
+(cl:progn
+  (scan-file* "~/.emacs")
+  (scan-file* "~/.emacs" :if-does-not-exist :error)
+  (scan-file* "~/.emacs" :reader #'read-char)
+  (scan-file* "~/.emacs" :if-does-not-exist :error :reader #'read-char)
+  (scan-file* "~/.emacs" :reader #'read-byte :element-type '(unsigned-byte 8))
+  (collect (scan-file* "~/.emacs"))
+  (collect (scan-file* "~/.emacs" :if-does-not-exist :error))
+  (collect (scan-file* "~/.emacs" :reader #'read-char))
+  (collect (scan-file* "~/.emacs" :if-does-not-exist :error :reader #'read-char))
+  (collect (scan-file* "~/.emacs" :reader #'read-byte :element-type '(unsigned-byte 8)))
+  )
+|#
